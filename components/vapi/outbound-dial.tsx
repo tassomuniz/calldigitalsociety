@@ -121,6 +121,7 @@ export default function PhoneInputForm() {
       });
 
       const data = await response.json();
+      console.log("Resposta do endpoint make-call:", data);
 
       if (response.ok) {
         toast.success("Chamada iniciada!");
@@ -129,10 +130,10 @@ export default function PhoneInputForm() {
         setNome('');
         setEmpresa('');
       } else {
-        throw new Error(data.message || "Erro ao iniciar a chamada");
+        throw new Error(data.message || data.error || "Erro ao iniciar a chamada");
       }
     } catch (error) {
-      console.error("Erro no handleSubmit:", error);
+      console.error("Erro detalhado:", error);
       toast.error(error instanceof Error ? error.message : "Erro ao iniciar a chamada");
     } finally {
       setLoading(false);
@@ -140,94 +141,97 @@ export default function PhoneInputForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Vapi Outbound Dialer</CardTitle>
-          <CardDescription className="text-center">
+    <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center -mt-16 px-4">
+      <Card className="w-full max-w-[320px] shadow-lg">
+        <CardHeader className="space-y-2 p-4">
+          <CardTitle className="text-xl text-center">
+            <span className="font-light">digital</span>
+            <span className="font-bold">society</span>
+          </CardTitle>
+          <CardDescription className="text-center text-sm">
             Preencha os dados para iniciar uma chamada
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="nome">Nome *</Label>
-                <Input
-                  id="nome"
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  placeholder="Digite o nome"
-                  required
-                />
-              </div>
+        <CardContent className="p-4 pt-0">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="space-y-2">
+              <Input
+                id="nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Nome *"
+                required
+                className="h-9"
+              />
               
-              <div className="space-y-2">
-                <Label htmlFor="empresa">Empresa</Label>
-                <Input
-                  id="empresa"
-                  value={empresa}
-                  onChange={(e) => setEmpresa(e.target.value)}
-                  placeholder="Digite o nome da empresa (opcional)"
+              <Input
+                id="empresa"
+                value={empresa}
+                onChange={(e) => setEmpresa(e.target.value)}
+                placeholder="Empresa (opcional)"
+                className="h-9"
+              />
+
+              <div className="phone-input-container">
+                <PhoneInput
+                  international
+                  defaultCountry="BR"
+                  value={phoneNumber}
+                  onChange={setPhoneNumber}
+                  flags={flags}
+                  className="flex"
+                  inputComponent={Input}
+                  placeholder="Telefone *"
+                  countrySelectProps={{
+                    className: "!bg-background !text-foreground"
+                  }}
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label>Telefone *</Label>
-                <div className="phone-input-container">
-                  <PhoneInput
-                    international
-                    defaultCountry="BR"
-                    value={phoneNumber}
-                    onChange={setPhoneNumber}
-                    flags={flags}
-                    className="flex"
-                    inputComponent={Input}
-                    placeholder="Digite o número de telefone"
-                    countrySelectProps={{
-                      className: "!bg-background !text-foreground"
-                    }}
-                  />
-                </div>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-12 text-lg font-medium"
-                disabled={loading || !phoneNumber || !nome}
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span>Iniciando chamada...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <Phone className="w-5 h-5" />
-                    <span>Fazer Chamada</span>
-                  </div>
-                )}
-              </Button>
             </div>
+
+            <Button 
+              type="submit" 
+              className="w-full h-9 text-sm font-medium"
+              disabled={loading || !phoneNumber || !nome}
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span>Iniciando...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <Phone className="w-3 h-3" />
+                  <span>Fazer Chamada</span>
+                </div>
+              )}
+            </Button>
           </form>
+
+          {activeCallId && callStatus && (
+            <div className="mt-3 pt-3 border-t">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex flex-col">
+                  <span className="font-medium">
+                    {callStatus.statusText}
+                  </span>
+                  {callStatus.duration !== undefined && (
+                    <span className="text-xs text-muted-foreground">
+                      {Math.floor(callStatus.duration / 60)}:
+                      {(callStatus.duration % 60).toString().padStart(2, '0')}
+                    </span>
+                  )}
+                </div>
+                {callStatus.cost && (
+                  <span className="font-medium">
+                    ${callStatus.cost.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      {activeCallId && callStatus && (
-        <Card className="mt-4">
-          <CardHeader>
-            <CardTitle className="text-xl">
-              Status: {callStatus.statusText}
-            </CardTitle>
-            {callStatus.duration !== undefined && (
-              <CardDescription>
-                Duração: {Math.floor(callStatus.duration / 60)}:
-                {(callStatus.duration % 60).toString().padStart(2, '0')}
-              </CardDescription>
-            )}
-          </CardHeader>
-        </Card>
-      )}
     </div>
   );
 }

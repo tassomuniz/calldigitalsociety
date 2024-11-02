@@ -1,0 +1,43 @@
+generator client {
+
+  provider = "prisma-client-js"
+
+}
+
+
+
+datasource db {
+
+  provider = "sqlite"
+
+  url      = env("DATABASE_URL")
+
+}
+
+
+
+model CallHistory {
+
+  id            String    @id
+
+  customerName  String
+
+  phoneNumber   String
+
+  company       String?
+
+  status        String
+
+  duration      Int?
+
+  cost          Float?
+
+  startedAt     DateTime?
+
+  endedAt       DateTime?
+
+  endedReason   String?
+
+  createdAt     DateTime  @default(now())
+
+} 
