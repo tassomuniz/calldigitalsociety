@@ -6,7 +6,6 @@ import PhoneInput, { Value as E164Number } from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import "react-phone-number-input/style.css";
